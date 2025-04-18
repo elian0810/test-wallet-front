@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import '../app.css';
 import CreateCustomer from "../components/forms/customer/CreateCustomer"; // Asegúrate que la ruta sea correcta
+import BalanceCredirLine from "../components/forms/credirLine/BalanceCredirLine"; // Asegúrate que la ruta sea correcta
 
 const CreditLinesTable = () => {
   const [creditLines, setCreditLines] = useState([]);
@@ -9,6 +10,7 @@ const CreditLinesTable = () => {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [showForm, setShowForm] = useState(false);
+  const [selectedLine, setSelectedLine] = useState(null);
 
   const fetchData = async (pageNumber = 1) => {
     setLoading(true);
@@ -22,7 +24,9 @@ const CreditLinesTable = () => {
       setLoading(false);
     }
   };
-
+  const handleBalance = (line) => {
+    setSelectedLine(line);
+  };
   useEffect(() => {
     fetchData(page);
   }, [page]);
@@ -70,8 +74,8 @@ const CreditLinesTable = () => {
       )}
 
       <table className="credit-table">
-        <thead>
-          <tr>
+      <thead>
+        <tr>
             <th>ID</th>
             <th>Nombre</th>
             <th>Balance</th>
@@ -80,6 +84,7 @@ const CreditLinesTable = () => {
             <th>Documento</th>
             <th>Email</th>
             <th>Teléfono</th>
+            <th>Acciones</th> 
           </tr>
         </thead>
         <tbody>
@@ -93,11 +98,32 @@ const CreditLinesTable = () => {
               <td>{line.document}</td>
               <td>{line.email}</td>
               <td>{line.phone}</td>
+              <td>
+                <button
+                  onClick={() => handleBalance(line)}
+                  style={{
+                    backgroundColor: "#6366f1",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "0.375rem",
+                    padding: "0.25rem 0.5rem",
+                    cursor: "pointer"
+                  }}
+                >
+                  Aumentar saldo
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>
-      </table>
 
+      </table>
+        {selectedLine && (
+          <BalanceCredirLine
+            data={selectedLine}
+            onClose={() => setSelectedLine(null)}
+          />
+        )}
       <div className="pagination">
         <button onClick={handlePrev} disabled={pagination.current_page === 1}>Anterior</button>
         <span>Página {pagination.current_page} de {pagination.last_page}</span>
