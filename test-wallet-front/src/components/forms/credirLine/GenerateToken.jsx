@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const GenerateToken = ({ data, onClose }) => {
+const GenerateToken = ({ data, onClose,onSuccess }) => {
   const [email, setEmail] = useState(null);
   const [amount, setAmount] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -31,6 +31,7 @@ const GenerateToken = ({ data, onClose }) => {
         const baseMessage = res.data.messages?.[0] || "Pago notificado correctamente el id de la seson es .";
         const sessionId = res.data.data?.session_id;
         setMessage(`${baseMessage} (ID de sesión: ${sessionId})`);
+        // 
         setIsError(false);
       } else {
         setMessage(res.data.messages?.[0] || "Error al notificar el pago.");
@@ -57,11 +58,19 @@ const GenerateToken = ({ data, onClose }) => {
         background: "#fff", padding: "2rem", borderRadius: "1rem",
         maxWidth: "600px", width: "90%", position: "relative"
       }}>
-        <button onClick={onClose} style={{
+      <button
+        onClick={() => {
+          if (onSuccess) onSuccess();
+          onClose();
+        }}
+        style={{
           position: "absolute", top: "1rem", right: "1rem",
           background: "transparent", border: "none", fontSize: "1.5rem"
-        }}>×</button>
-
+        }}
+      >
+        ×
+      </button>
+        
         <h3>Notificar pago de {data.name}</h3>
         <p><strong>Documento:</strong> {data.document}</p>
         <p><strong>Teléfono:</strong> {data.phone}</p>

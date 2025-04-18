@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const DebtCreditLine = ({ data, onClose }) => {
+const DebtCreditLine = ({ data, onClose, onSuccess }) => {
   const [token, setToken] = useState("");
   const [email, setEmail] = useState("");
   const [sessionId, setSessionId] = useState(""); // 👈 NUEVO estado
@@ -29,6 +29,7 @@ const DebtCreditLine = ({ data, onClose }) => {
 
       if (res.data.success) {
         setMessage(`Pago confirmado correctamente (session_id: ${sessionId.trim()})`);
+        if (onSuccess) onSuccess();  
         setIsError(false);
       } else {
         setMessage(res.data.messages?.[0] || "Error al confirmar el pago.");

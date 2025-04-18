@@ -16,12 +16,27 @@ const CreditLinesTable = () => {
   const [selectedToNotify, setSelectedToNotify] = useState(null);
   const [selectedToConfirm, setSelectedToConfirm] = useState(null);
 
+  const [filterDocument, setFilterDocument] = useState("");
+  const [filterPhone, setFilterPhone] = useState("");
+
   const fetchData = async (pageNumber = 1) => {
     setLoading(true);
     try {
-      const res = await axios.get(`http://127.0.0.1/api/credit-lines?paginate=true&page=${pageNumber}`);
-      setCreditLines(res.data.data.data);
-      setPagination(res.data.data);
+      let url = `http://127.0.0.1/api/credit-lines?paginate=true&page=${pageNumber}`;
+
+      if (filterDocument && filterPhone) {
+        url = `http://127.0.0.1/api/credit-lines?phone=${filterPhone}&document=${filterDocument}`;
+      }
+
+      const res = await axios.get(url);
+
+      if (filterDocument && filterPhone) {
+        setCreditLines(res.data.data);
+        setPagination({ current_page: 1, last_page: 1 });
+      } else {
+        setCreditLines(res.data.data.data);
+        setPagination(res.data.data);
+      }
     } catch (error) {
       console.error("Error fetching credit lines:", error);
     } finally {
@@ -29,17 +44,9 @@ const CreditLinesTable = () => {
     }
   };
 
-  const handleBalance = (line) => {
-    setSelectedLine(line);
-  };
-
-  const handleNotifyPayment = (line) => {
-    setSelectedToNotify(line);
-  };
-
-  const handleConfirmPayment = (line) => {
-    setSelectedToConfirm(line);
-  };
+  const handleBalance = (line) => setSelectedLine(line);
+  const handleNotifyPayment = (line) => setSelectedToNotify(line);
+  const handleConfirmPayment = (line) => setSelectedToConfirm(line);
 
   useEffect(() => {
     fetchData(page);
@@ -60,7 +67,7 @@ const CreditLinesTable = () => {
       minimumFractionDigits: 2,
     }).format(value);
   };
-  
+
   const btnStyle = {
     border: "none",
     borderRadius: "50%",
@@ -99,9 +106,64 @@ const CreditLinesTable = () => {
         />
       )}
 
+      {/* Filtros */}
+      <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
+        <input
+          type="text"
+          placeholder="Documento"
+          value={filterDocument}
+          onChange={(e) => setFilterDocument(e.target.value)}
+          style={{ padding: "0.5rem", width: "200px" }}
+        />
+        <input
+          type="text"
+          placeholder="Teléfono"
+          value={filterPhone}
+          onChange={(e) => setFilterPhone(e.target.value)}
+          style={{ padding: "0.5rem", width: "200px" }}
+        />
+        <button
+          onClick={() => {
+            setPage(1);
+            fetchData(1);
+          }}
+          disabled={!filterDocument || !filterPhone}
+          style={{
+            padding: "0.5rem 1rem",
+            background: (!filterDocument || !filterPhone) ? "#ccc" : "#22c55e",
+            color: "#fff",
+            border: "none",
+            borderRadius: "0.5rem",
+            cursor: (!filterDocument || !filterPhone) ? "not-allowed" : "pointer"
+          }}
+        >
+          Buscar
+        </button>
+        
+        <button
+          onClick={() => {
+            setFilterDocument("");
+            setFilterPhone("");
+            setPage(1);
+            fetchData(1);
+          }}
+          style={{
+            padding: "0.5rem 1rem",
+            background: "#ef4444",
+            color: "#fff",
+            border: "none",
+            borderRadius: "0.5rem",
+            cursor: "pointer"
+          }}
+        >
+          Limpiar
+        </button>
+      </div>
+
+
       <table className="credit-table">
-      <thead>
-        <tr>
+        <thead>
+          <tr>
             <th>ID</th>
             <th>Nombre</th>
             <th>Balance</th>
@@ -110,7 +172,7 @@ const CreditLinesTable = () => {
             <th>Documento</th>
             <th>Email</th>
             <th>Teléfono</th>
-            <th>Acciones</th> 
+            <th>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -124,7 +186,6 @@ const CreditLinesTable = () => {
               <td>{line.document}</td>
               <td>{line.email}</td>
               <td>{line.phone}</td>
-              <td>
               <td>
                 <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
                   <button
@@ -149,34 +210,47 @@ const CreditLinesTable = () => {
                     <span role="img" aria-label="Confirmar pago">🧾</span>
                   </button>
                 </div>
-                </td>
-
-            </td>
+              </td>
             </tr>
           ))}
         </tbody>
-
       </table>
-        {selectedLine && (
-          <BalanceCredirLine
-            data={selectedLine}
-            onClose={() => setSelectedLine(null)}
-          />
-        )}
-        {selectedToNotify && (
-          <GenerateToken
-            data={selectedToNotify}
-            onClose={() => setSelectedToNotify(null)}
-          />
-        )}
-        {selectedToConfirm && (
-          <DebtCreditLine
-            data={selectedToConfirm}
-            onClose={() => setSelectedToConfirm(null)}
-          />
-        )}
 
-        <div className="pagination">
+      {selectedLine && (
+        <BalanceCredirLine
+          data={selectedLine}
+          onClose={() => setSelectedLine(null)}
+          onSuccess={() => {
+            fetchData(page);
+            setSelectedLine(null);
+          }}
+        />
+      )}
+
+      {selectedToNotify && (
+        <GenerateToken
+          data={selectedToNotify}
+          onClose={() => setSelectedToNotify(null)}
+          onSuccess={() => {
+            fetchData(page);
+            setSelectedToNotify(null);
+          }}
+        />
+      )}
+
+      {selectedToConfirm && (
+        <DebtCreditLine
+          data={selectedToConfirm}
+          onClose={() => setSelectedToConfirm(null)}
+          onSuccess={() => {
+            fetchData(page);
+            setSelectedToConfirm(null);
+          }}
+        />
+      )}
+
+
+      <div className="pagination">
         <button onClick={handlePrev} disabled={pagination.current_page === 1}>Anterior</button>
         <span>Página {pagination.current_page} de {pagination.last_page}</span>
         <button onClick={handleNext} disabled={pagination.current_page === pagination.last_page}>Siguiente</button>
