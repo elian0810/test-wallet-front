@@ -1,4 +1,5 @@
 import BalanceCredirLine from "../components/forms/credirLine/BalanceCredirLine"; 
+import DebtCreditLine from "../components/forms/credirLine/DebtCreditLine";
 import CreateCustomer from "../components/forms/customer/CreateCustomer"; 
 import GenerateToken from "../components/forms/credirLine/GenerateToken"; 
 import React, { useEffect, useState } from "react";
@@ -13,6 +14,7 @@ const CreditLinesTable = () => {
   const [showForm, setShowForm] = useState(false);
   const [selectedLine, setSelectedLine] = useState(null);
   const [selectedToNotify, setSelectedToNotify] = useState(null);
+  const [selectedToConfirm, setSelectedToConfirm] = useState(null);
 
   const fetchData = async (pageNumber = 1) => {
     setLoading(true);
@@ -35,6 +37,10 @@ const CreditLinesTable = () => {
     setSelectedToNotify(line);
   };
 
+  const handleConfirmPayment = (line) => {
+    setSelectedToConfirm(line);
+  };
+
   useEffect(() => {
     fetchData(page);
   }, [page]);
@@ -53,6 +59,18 @@ const CreditLinesTable = () => {
       currency: "COP",
       minimumFractionDigits: 2,
     }).format(value);
+  };
+  
+  const btnStyle = {
+    border: "none",
+    borderRadius: "50%",
+    width: "30px",
+    height: "30px",
+    cursor: "pointer",
+    fontSize: "1rem",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center"
   };
 
   return (
@@ -108,43 +126,29 @@ const CreditLinesTable = () => {
               <td>{line.phone}</td>
               <td>
               <td>
-              <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
-  <button
-    title="Aumentar saldo"
-    onClick={() => handleBalance(line)}
-    style={{
-      border: "none",
-      borderRadius: "50%",
-      width: "30px",
-      height: "30px",
-      cursor: "pointer",
-      fontSize: "1rem",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    }}
-  >
-    <span role="img" aria-label="Aumentar saldo">⬆️</span>
-  </button>
-  <button
-    title="Notificar pago"
-    onClick={() => handleNotifyPayment(line)}
-    style={{
-      border: "none",
-      borderRadius: "50%",
-      width: "30px",
-      height: "30px",
-      cursor: "pointer",
-      fontSize: "1rem",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center"
-    }}
-  >
-    <span role="img" aria-label="Notificar pago">💳</span>
-  </button>
-</div>
-
+                <div style={{ display: "flex", gap: "0.5rem", justifyContent: "center" }}>
+                  <button
+                    title="Aumentar saldo"
+                    onClick={() => handleBalance(line)}
+                    style={btnStyle}
+                  >
+                    <span role="img" aria-label="Aumentar saldo">⬆️</span>
+                  </button>
+                  <button
+                    title="Notificar pago"
+                    onClick={() => handleNotifyPayment(line)}
+                    style={btnStyle}
+                  >
+                    <span role="img" aria-label="Notificar pago">💳</span>
+                  </button>
+                  <button
+                    title="Confirmar pago"
+                    onClick={() => handleConfirmPayment(line)}
+                    style={btnStyle}
+                  >
+                    <span role="img" aria-label="Confirmar pago">🧾</span>
+                  </button>
+                </div>
                 </td>
 
             </td>
@@ -165,6 +169,13 @@ const CreditLinesTable = () => {
             onClose={() => setSelectedToNotify(null)}
           />
         )}
+        {selectedToConfirm && (
+          <DebtCreditLine
+            data={selectedToConfirm}
+            onClose={() => setSelectedToConfirm(null)}
+          />
+        )}
+
         <div className="pagination">
         <button onClick={handlePrev} disabled={pagination.current_page === 1}>Anterior</button>
         <span>Página {pagination.current_page} de {pagination.last_page}</span>

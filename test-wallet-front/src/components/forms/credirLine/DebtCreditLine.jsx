@@ -1,37 +1,35 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const GenerateToken = ({ data, onClose }) => {
+const DebtCreditLine = ({ data, onClose }) => {
+  const [token, setToken] = useState("");
   const [email, setEmail] = useState(null);
-  const [amount, setAmount] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
 
-  const handleNotify = async () => {
-    if (!email || !amount || isNaN(amount)) {
-      setMessage("Por favor completa los campos correctamente.");
-      setIsError(true);
-      return;
+  const handleConfirmPayment = async () => {
+    if (!email || isNaN(token)) {
+        setMessage("Por favor ingresa un valor válido.");
+        setIsError(true);
+        return;
     }
-
     setLoading(true);
     setMessage("");
     setIsError(false);
 
     try {
-      const res = await axios.post("http://127.0.0.1:80/api/credit-lines/generate-token-total-debt", {
-        document: data.document,
-        phone: data.phone,
-        email: email,
-        total_debt: amount
+      const res = await axios.post("http://127.0.0.1:80/api/credit-lines/debt-credit-line", {
+        session_id: data.uuid,
+        token: token,
+        email: email
       });
 
       if (res.data.success) {
-        setMessage("Pago notificado correctamente.");
+        setMessage("Pago confirmado correctamente.");
         setIsError(false);
       } else {
-        setMessage(res.data.messages?.[0] || "Error al notificar el pago.");
+        setMessage(res.data.messages?.[0] || "Error al confirmar el pago.");
         setIsError(true);
       }
     } catch (err) {
@@ -60,49 +58,55 @@ const GenerateToken = ({ data, onClose }) => {
           background: "transparent", border: "none", fontSize: "1.5rem"
         }}>×</button>
 
-        <h3>Notificar pago de {data.name}</h3>
+        <h3>Confirmar pago de {data.name}</h3>
         <p><strong>Documento:</strong> {data.document}</p>
-        <p><strong>Teléfono:</strong> {data.phone}</p>
-        <hr style={{ margin: "1rem 0" }} />
+        <p><strong>Deuda total:</strong> {data.total_debt}</p>
 
-        <label>Email</label>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Correo electrónico"
-          style={{
-            width: "100%", padding: "0.5rem", marginBottom: "1rem",
-            borderRadius: "0.375rem", border: "1px solid #ccc"
-          }}
-        />
+        <div style={{ marginTop: "1rem" }}>
+          <label><strong>Email:</strong></label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "0.5rem",
+              marginTop: "0.25rem",
+              marginBottom: "1rem",
+              borderRadius: "0.375rem",
+              border: "1px solid #ccc"
+            }}
+          />
 
-        <label>Total a Pagar</label>
-        <input
-          type="number"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          placeholder="Monto"
-          style={{
-            width: "100%", padding: "0.5rem", marginBottom: "1rem",
-            borderRadius: "0.375rem", border: "1px solid #ccc"
-          }}
-        />
+          <label><strong>Token:</strong></label>
+          <input
+            type="number"
+            value={token}
+            onChange={(e) => setToken(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "0.5rem",
+              marginTop: "0.25rem",
+              borderRadius: "0.375rem",
+              border: "1px solid #ccc"
+            }}
+          />
+        </div>
 
         <button
-          onClick={handleNotify}
+          onClick={handleConfirmPayment}
           disabled={loading}
           style={{
-            background: "#3b82f6",
+            background: "#10b981",
             color: "#fff",
             border: "none",
             borderRadius: "0.5rem",
             padding: "0.75rem 1rem",
-            marginTop: "0.5rem",
+            marginTop: "1rem",
             cursor: "pointer"
           }}
         >
-          {loading ? "Enviando..." : "Notificar Pago"}
+          {loading ? "Confirmando..." : "Confirmar Pago"}
         </button>
 
         {message && (
@@ -118,4 +122,4 @@ const GenerateToken = ({ data, onClose }) => {
   );
 };
 
-export default GenerateToken;
+export default DebtCreditLine;
