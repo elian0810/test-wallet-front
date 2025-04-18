@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const BalanceCreditLine = ({ data, onClose }) => {
-  const [extraBalance, setExtraBalance] = useState("");
+const GenerateToken = ({ data, onClose }) => {
+  const [email, setEmail] = useState(null);
+  const [amount, setAmount] = useState(null);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
 
-  const handleSendBalance = async () => {
-    if (!extraBalance || isNaN(extraBalance)) {
-      setMessage("Por favor ingresa un valor válido.");
+  const handleNotify = async () => {
+    if (!email || !amount || isNaN(amount)) {
+      setMessage("Por favor completa los campos correctamente.");
       setIsError(true);
       return;
     }
@@ -19,23 +20,23 @@ const BalanceCreditLine = ({ data, onClose }) => {
     setIsError(false);
 
     try {
-      const res = await axios.post("http://127.0.0.1:80/api/credit-lines/send-balane", {
+      const res = await axios.post("http://127.0.0.1:80/api/credit-lines/generate-token-total-debt", {
         document: data.document,
         phone: data.phone,
-        balance: extraBalance,
+        email: email,
+        total_debt: amount
       });
 
       if (res.data.success) {
-        setMessage("Saldo enviado con éxito.");
+        setMessage("Pago notificado correctamente.");
         setIsError(false);
-        setExtraBalance(""); // limpiar input
       } else {
-        setMessage(res.data.messages?.[0] || "Error al enviar el saldo.");
+        setMessage(res.data.messages?.[0] || "Error al notificar el pago.");
         setIsError(true);
       }
     } catch (err) {
       const backendMessage = err.response?.data?.messages?.[0];
-      setMessage(backendMessage || "Error en la conexión con el servidor.");
+      setMessage(backendMessage || "Error de conexión con el servidor.");
       setIsError(true);
     } finally {
       setLoading(false);
@@ -59,41 +60,48 @@ const BalanceCreditLine = ({ data, onClose }) => {
           background: "transparent", border: "none", fontSize: "1.5rem"
         }}>×</button>
 
-        <h3>Aumentar saldo de {data.name}</h3>
+        <h3>Notificar pago de {data.name}</h3>
         <p><strong>Documento:</strong> {data.document}</p>
         <p><strong>Teléfono:</strong> {data.phone}</p>
 
-        <hr style={{ margin: "1rem 0" }} />
+        <label>Email</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="Correo electrónico"
+          style={{
+            width: "100%", padding: "0.5rem", marginBottom: "1rem",
+            borderRadius: "0.375rem", border: "1px solid #ccc"
+          }}
+        />
 
-        <label><strong>Agregar Saldo:</strong></label>
+        <label>Total a Pagar</label>
         <input
           type="number"
-          value={extraBalance}
-          onChange={(e) => setExtraBalance(e.target.value)}
-          placeholder="Ingresa el valor"
+          value={amount}
+          onChange={(e) => setAmount(e.target.value)}
+          placeholder="Monto"
           style={{
-            width: "100%",
-            padding: "0.5rem",
-            marginTop: "0.5rem",
-            marginBottom: "1rem",
-            borderRadius: "0.375rem",
-            border: "1px solid #ccc"
+            width: "100%", padding: "0.5rem", marginBottom: "1rem",
+            borderRadius: "0.375rem", border: "1px solid #ccc"
           }}
         />
 
         <button
-          onClick={handleSendBalance}
+          onClick={handleNotify}
           disabled={loading}
           style={{
-            background: "#10b981",
+            background: "#3b82f6",
             color: "#fff",
             border: "none",
             borderRadius: "0.5rem",
             padding: "0.75rem 1rem",
+            marginTop: "0.5rem",
             cursor: "pointer"
           }}
         >
-          {loading ? "Enviando..." : "Enviar Saldo"}
+          {loading ? "Enviando..." : "Notificar Pago"}
         </button>
 
         {message && (
@@ -109,4 +117,4 @@ const BalanceCreditLine = ({ data, onClose }) => {
   );
 };
 
-export default BalanceCreditLine;
+export default GenerateToken;
