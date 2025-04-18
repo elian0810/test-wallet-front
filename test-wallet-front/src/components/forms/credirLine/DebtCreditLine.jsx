@@ -61,6 +61,7 @@ const DebtCreditLine = ({ data, onClose }) => {
         <h3>Confirmar pago de {data.name}</h3>
         <p><strong>Documento:</strong> {data.document}</p>
         <p><strong>Deuda total:</strong> {data.total_debt}</p>
+        <hr style={{ margin: "1rem 0" }} />
 
         <div style={{ marginTop: "1rem" }}>
           <label><strong>Email:</strong></label>
