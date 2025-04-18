@@ -3,30 +3,32 @@ import axios from "axios";
 
 const DebtCreditLine = ({ data, onClose }) => {
   const [token, setToken] = useState("");
-  const [email, setEmail] = useState(null);
+  const [email, setEmail] = useState("");
+  const [sessionId, setSessionId] = useState(""); // 👈 NUEVO estado
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [isError, setIsError] = useState(false);
 
   const handleConfirmPayment = async () => {
-    if (!email || isNaN(token)) {
-        setMessage("Por favor ingresa un valor válido.");
-        setIsError(true);
-        return;
+    if (!email.trim() || !token.trim() || !sessionId.trim() || isNaN(token)) {
+      setMessage("Por favor completa todos los campos correctamente.");
+      setIsError(true);
+      return;
     }
+
     setLoading(true);
     setMessage("");
     setIsError(false);
 
     try {
       const res = await axios.post("http://127.0.0.1:80/api/credit-lines/debt-credit-line", {
-        session_id: data.uuid,
-        token: token,
-        email: email
+        session_id: sessionId.trim(),
+        token: Number(token),
+        email: email.trim()
       });
 
       if (res.data.success) {
-        setMessage("Pago confirmado correctamente.");
+        setMessage(`Pago confirmado correctamente (session_id: ${sessionId.trim()})`);
         setIsError(false);
       } else {
         setMessage(res.data.messages?.[0] || "Error al confirmar el pago.");
@@ -84,6 +86,22 @@ const DebtCreditLine = ({ data, onClose }) => {
             type="number"
             value={token}
             onChange={(e) => setToken(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "0.5rem",
+              marginTop: "0.25rem",
+              marginBottom: "1rem",
+              borderRadius: "0.375rem",
+              border: "1px solid #ccc"
+            }}
+          />
+
+          <label><strong>Session ID:</strong></label>
+          <input
+            type="text"
+            value={sessionId}
+            onChange={(e) => setSessionId(e.target.value)}
+            placeholder="Ingrese el ID de sesión"
             style={{
               width: "100%",
               padding: "0.5rem",

@@ -28,7 +28,9 @@ const GenerateToken = ({ data, onClose }) => {
       });
 
       if (res.data.success) {
-        setMessage("Pago notificado correctamente.");
+        const baseMessage = res.data.messages?.[0] || "Pago notificado correctamente el id de la seson es .";
+        const sessionId = res.data.data?.session_id;
+        setMessage(`${baseMessage} (ID de sesión: ${sessionId})`);
         setIsError(false);
       } else {
         setMessage(res.data.messages?.[0] || "Error al notificar el pago.");
